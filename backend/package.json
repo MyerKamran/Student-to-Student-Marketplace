@@ -1,0 +1,8 @@
+{
+  "name": "campus-market-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  }
+}

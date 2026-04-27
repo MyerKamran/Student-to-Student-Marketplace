@@ -32,7 +32,7 @@ function Login() {
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) {
-      addToast('Missing VITE_GOOGLE_CLIENT_ID in your .env (frontend).', 'error');
+      addToast('Missing VITE_GOOGLE_CLIENT_ID in your root .env.', 'error');
       return;
     }
 

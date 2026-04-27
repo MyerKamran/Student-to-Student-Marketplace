@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // Keep using the root .env after frontend/backend folder split.
+  envDir: '..',
   server: {
     port: 5173,
     strictPort: true,
