@@ -8,7 +8,7 @@
     "dev": "npm run dev:full",
     "dev:web": "npm run dev --prefix frontend",
     "dev:api": "node backend/index.js",
-    "dev:full": "concurrently --kill-others-on-fail \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:full": "run-p dev:web dev:api",
     "build": "npm run build --prefix frontend",
     "preview": "npm run preview --prefix frontend"
   },
