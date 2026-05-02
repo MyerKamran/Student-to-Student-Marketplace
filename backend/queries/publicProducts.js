@@ -1,50 +1,32 @@
-export function qPublicProductsList({ whereSql, orderBySql, limitSql }) {
+export function qPublicProductsList() {
   return `
-    select
-      p.product_id, p.seller_id, p.title, p.description, p.price, p.condition, p.stock_qty,
-      coalesce(p.contact_preference, 'In-app Message') as contact_preference,
-      p.campus, p.created_at,
-      exists (
-        select o2.order_id
-        from order_items oi2
-        join orders o2 on o2.order_id = oi2.order_id
-        where oi2.product_id = p.product_id
-          and o2.status in ('pending','confirmed')
-      ) as is_ordered,
-      u.full_name as seller_name,
-      u.email as seller_email,
-      coalesce(u.phone_number, '') as seller_phone_number,
-      c.name as category,
-      (select pi.image_url from product_images pi where pi.product_id = p.product_id order by pi.is_primary desc, pi.image_id asc limit 1) as image_url
+    select p.product_id, p.seller_id, p.title, p.description, p.price, p.condition, p.stock_qty, p.contact_preference, p.campus, p.created_at,
+      (s.open_orders > 0) as is_ordered, u.full_name as seller_name, u.email as seller_email, u.phone_number as seller_phone_number, c.name as category, img.image_url
     from products p
     join users u on u.user_id = p.seller_id
     left join categories c on c.category_id = p.category_id
-    where ${whereSql}
-    order by ${orderBySql}
-    limit ${limitSql};
+    left join product_order_stats s on s.product_id = p.product_id
+    left join product_primary_images img on img.product_id = p.product_id
+    where p.is_available = true
+      and ($1 = '' or p.title ilike '%' || $1 || '%' or coalesce(p.description, '') ilike '%' || $1 || '%')
+      and ($2 = '' or c.name = $2)
+      and ($3 = '' or p.condition = $3)
+    order by
+      case when $4 = 'price_asc' then p.price end asc,
+      case when $4 = 'price_desc' then p.price end desc,
+      p.created_at desc
+    limit $5;
   `;
 }
 
 export function qPublicProductDetail() {
   return `
-    select
-      p.product_id, p.seller_id, p.title, p.description, p.price, p.condition, p.stock_qty,
-      coalesce(p.contact_preference, 'In-app Message') as contact_preference,
-      p.campus, p.created_at,
-      exists (
-        select o2.order_id
-        from order_items oi2
-        join orders o2 on o2.order_id = oi2.order_id
-        where oi2.product_id = p.product_id
-          and o2.status in ('pending','confirmed')
-      ) as is_ordered,
-      u.full_name as seller_name,
-      u.email as seller_email,
-      coalesce(u.phone_number, '') as seller_phone_number,
-      c.name as category
+    select p.product_id, p.seller_id, p.title, p.description, p.price, p.condition, p.stock_qty, p.contact_preference, p.campus, p.created_at,
+      (s.open_orders > 0) as is_ordered, u.full_name as seller_name, u.email as seller_email, u.phone_number as seller_phone_number, c.name as category
     from products p
     join users u on u.user_id = p.seller_id
     left join categories c on c.category_id = p.category_id
+    left join product_order_stats s on s.product_id = p.product_id
     where p.product_id = $1
     limit 1;
   `;
@@ -59,4 +41,3 @@ export function qProductImages() {
     order by is_primary desc, image_id asc;
   `;
 }
-

@@ -1,7 +1,6 @@
 export function qUserByEmailForGoogle() {
   return `
-    select user_id, full_name, email, campus, avatar_url, role, is_active, created_at, google_id,
-           nullif(coalesce(password, ''), '') as password_value
+    select user_id,full_name,email,campus,avatar_url,role,is_active,created_at,google_id,nullif(coalesce(password, ''), '') as password_value
     from users
     where lower(email) = $1
     limit 1;
@@ -62,8 +61,7 @@ export function qRegisterUser() {
 
 export function qLoginUserByEmail() {
   return `
-    select user_id, full_name, email, campus, avatar_url, role, is_active,
-           nullif(coalesce(password, ''), '') as password_value
+    select user_id,full_name,email,campus,avatar_url,role,is_active,nullif(coalesce(password, ''), '') as password_value
     from users
     where lower(email) = $1
     limit 1;
@@ -72,7 +70,7 @@ export function qLoginUserByEmail() {
 
 export function qAuthMeUser() {
   return `
-    select user_id, full_name, email, campus, avatar_url, role, is_active, occupation, phone_number, bio
+    select user_id,full_name,email,campus,avatar_url,role,is_active,occupation,phone_number,bio
     from users
     where user_id = $1
     limit 1;
@@ -81,10 +79,16 @@ export function qAuthMeUser() {
 
 export function qMyProfile() {
   return `
-    select user_id, full_name, email, campus, avatar_url, role,
-           coalesce(to_jsonb(users)->>'occupation', 'Student') as occupation,
-           to_jsonb(users)->>'phone_number' as phone_number,
-           to_jsonb(users)->>'bio' as bio
+    select
+      user_id,
+      full_name,
+      email,
+      campus,
+      avatar_url,
+      role,
+      coalesce(occupation, 'Student') as occupation,
+      phone_number,
+      bio
     from users
     where user_id = $1
     limit 1;
@@ -105,4 +109,3 @@ export function qUpdateMyProfile() {
     returning user_id, full_name, email, campus, avatar_url, role, occupation, phone_number, bio;
   `;
 }
-

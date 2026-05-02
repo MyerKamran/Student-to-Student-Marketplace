@@ -1,9 +1,15 @@
 export function qAdminOverviewUsersCount() {
-  return `select count(*) as count from users;`;
+  return `
+    select count(*) as count
+    from users;
+  `;
 }
 
 export function qAdminOverviewProductsCount() {
-  return `select count(*) as count from products;`;
+  return `
+    select count(*) as count
+    from products;
+  `;
 }
 
 export function qAdminUsersList() {
@@ -47,8 +53,7 @@ export function qAdminDisableProductsBySeller() {
 
 export function qAdminProductsList() {
   return `
-    select p.product_id, p.title, p.price, p.is_available, p.stock_qty, p.created_at,
-           u.user_id as seller_id, u.full_name as seller_name
+    select p.product_id,p.title,p.price,p.is_available,p.stock_qty,p.created_at,u.user_id as seller_id,u.full_name as seller_name
     from products p
     left join users u on u.user_id = p.seller_id
     order by p.created_at desc, p.product_id desc
@@ -65,6 +70,8 @@ export function qAdminSoftRemoveProduct() {
 }
 
 export function qAdminDeleteCartItemsForProduct() {
-  return `delete from cart_items where product_id = $1;`;
+  return `
+    delete from cart_items
+    where product_id = $1;
+  `;
 }
-

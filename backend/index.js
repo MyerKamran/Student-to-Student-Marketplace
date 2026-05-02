@@ -68,6 +68,27 @@ async function ensureOptionalColumns() {
     alter table users alter column password type text using password::text;
     alter table products add column if not exists contact_preference text default 'In-app Message';
   `);
+
+  await pool.query(`
+    create or replace view product_order_stats as
+    select
+      oi.product_id,
+      sum(oi.quantity) filter (where o.status in ('pending','confirmed','completed')) as sold_qty,
+      sum(oi.quantity * oi.unit_price) filter (where o.status in ('pending','confirmed','completed')) as earned,
+      count(*) filter (where o.status in ('pending','confirmed')) as open_orders
+    from order_items oi
+    join orders o on o.order_id = oi.order_id
+    group by oi.product_id;
+  `);
+
+  await pool.query(`
+    create or replace view product_primary_images as
+    select distinct on (pi.product_id)
+      pi.product_id,
+      pi.image_url
+    from product_images pi
+    order by pi.product_id, pi.is_primary desc, pi.image_id asc;
+  `);
 }
 
 function normalizeEmail(email) {
@@ -605,35 +626,13 @@ app.get('/api/products', async (req, res) => {
     const category = req.query.category ? String(req.query.category) : '';
     const condition = req.query.condition ? String(req.query.condition).toLowerCase() : '';
     const sort = req.query.sort ? String(req.query.sort) : 'newest';
-
-    const where = ['p.is_available = true'];
-    const values = [];
-
-    if (search) {
-      values.push(search);
-      where.push(`(p.title ilike '%' || $${values.length} || '%' or coalesce(p.description,'') ilike '%' || $${values.length} || '%')`);
-    }
-
-    if (category && category !== 'All') {
-      values.push(category);
-      where.push(`c.name = $${values.length}`);
-    }
-
-    if (condition && condition !== 'all') {
-      values.push(condition);
-      where.push(`p.condition = $${values.length}`);
-    }
-
-    let orderBy = 'p.created_at desc';
-    if (sort === 'price_asc') orderBy = 'p.price asc';
-    if (sort === 'price_desc') orderBy = 'p.price desc';
+    const normalizedCategory = category && category !== 'All' ? category : '';
+    const normalizedCondition = condition && condition !== 'all' ? condition : '';
+    const normalizedSort = sort === 'price_asc' || sort === 'price_desc' ? sort : 'newest';
+    const values = [search, normalizedCategory, normalizedCondition, normalizedSort, limit];
 
     const { rows } = await pool.query(
-      qPublicProductsList({
-        whereSql: where.join(' and '),
-        orderBySql: orderBy,
-        limitSql: String(limit),
-      }),
+      qPublicProductsList(),
       values
     );
 

@@ -5,4 +5,3 @@ export function qCategoriesList() {
     order by name asc;
   `;
 }
-
