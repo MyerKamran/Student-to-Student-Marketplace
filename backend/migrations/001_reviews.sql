@@ -11,6 +11,3 @@ create table if not exists reviews (
   -- one review per user per product keeps it simple
   unique (product_id, reviewer_id)
 );
-
-create index if not exists idx_reviews_product_id_created_at on reviews(product_id, created_at desc);
-
