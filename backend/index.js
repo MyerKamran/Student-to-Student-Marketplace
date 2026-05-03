@@ -47,7 +47,7 @@ import {
 } from './queries/cart.js';
 import { qInsertMessage, qMyMessages, qMarkMessageRead } from './queries/messages.js';
 import { qUnreadMessagesCount, qOpenOrdersCountForUser } from './queries/notifications.js';
-import { qReviewsForProduct, qReviewSummaryForProduct, qProductOwnerId, qUpsertReview } from './queries/reviews.js';
+import { qReviewsForProduct, qReviewSummaryForProduct, qProductOwnerId, qInsertReview } from './queries/reviews.js';
 import { qPublicProductsList, qPublicProductDetail, qProductImages } from './queries/publicProducts.js';
 
 const app = express();
@@ -1414,13 +1414,12 @@ app.post('/api/products/:id/reviews', requireUser, async (req, res) => {
     if (Number(sellerId) === Number(reviewerId)) return res.status(400).json({ error: 'You cannot review your own listing' });
 
     const { rows } = await pool.query(
-      qUpsertReview(),
+      qInsertReview(),
       [productId, reviewerId, rating, comment]
     );
 
     res.status(201).json({ reviewId: rows[0].review_id });
   } catch (e) {
-    // If reviews table doesn't exist yet, the error will guide the user to run the migration.
     res.status(500).json({ error: String(e?.message || e) });
   }
 });

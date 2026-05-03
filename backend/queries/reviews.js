@@ -26,15 +26,10 @@ export function qProductOwnerId() {
   `;
 }
 
-export function qUpsertReview() {
+export function qInsertReview() {
   return `
     insert into reviews (product_id, reviewer_id, rating, comment)
     values ($1, $2, $3, $4)
-    on conflict (product_id, reviewer_id) do update
-    set
-      rating = excluded.rating,
-      comment = excluded.comment,
-      created_at = now()
     returning review_id;
   `;
 }

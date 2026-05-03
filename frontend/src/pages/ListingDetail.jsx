@@ -422,9 +422,6 @@ function ListingDetail() {
               >
                 {submittingReview ? 'Saving…' : 'Save review'}
               </button>
-              <p className="mt-2 text-xs text-gray-400">
-                If reviews don’t load yet, run the SQL in <code className="font-mono">server/migrations/001_reviews.sql</code> on Neon.
-              </p>
             </div>
 
             <div className="lg:col-span-3 space-y-3">
